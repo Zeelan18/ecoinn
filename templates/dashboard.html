@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoVolt AI Dashboard - Smart Microgrid System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Header Navigation -->
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">EcoVolt AI</span>
+            </div>
+            <nav class="nav-menu">
+                <button id="themeToggle" class="btn btn-icon" title="Toggle Theme">🌙</button>
+                <span class="user-info">👤 {{ username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <div class="dashboard-container">
+        
+        <!-- Sidebar Controls -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-section">
+                <h3>⚙️ Mode Selection</h3>
+                <div class="mode-selector">
+                    <button class="btn-mode active" data-mode="Urban">🏙️ Urban</button>
+                    <button class="btn-mode" data-mode="Rural">🌾 Rural</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>⚠️ Simulation</h3>
+                <div class="toggle-switch">
+                    <label>
+                        <input type="checkbox" id="outageToggle" class="toggle-input">
+                        <span class="toggle-label">Simulate Power Cut</span>
+                    </label>
+                    <span id="outageStatus" class="status-indicator">🟢 Grid Normal</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>📊 Quick Stats</h3>
+                <div class="quick-stat">
+                    <span class="stat-label">Total Saved Today</span>
+                    <span class="stat-value" id="todaySavings">$0.00</span>
+                </div>
+                <div class="quick-stat">
+                    <span class="stat-label">Efficiency</span>
+                    <span class="stat-value" id="efficiencyScore">---%</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>🔄 Refresh</h3>
+                <button id="refreshBtn" class="btn btn-primary">↻ Update Now</button>
+                <p class="text-muted">Auto-updates every 5s</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            
+            <!-- Real-Time Status -->
+            <section class="dashboard-section">
+                <h2>⚡ Real-Time Energy Status</h2>
+                <div class="status-grid">
+                    <!-- Solar Card -->
+                    <div class="energy-card solar-card">
+                        <div class="card-header">
+                            <h3>☀️ Solar Generation</h3>
+                            <span class="card-icon">🌞</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="value" id="solarValue">-- W</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="solarProgress" style="width: 0%"></div>
+                            </div>
+                            <p class="text-muted">Max: <span id="solarMax">8000</span> W</p>
+                        </div>
+                    </div>
+
+                    <!-- Battery Card -->
+                    <div class="energy-card battery-card">
+                        <div class="card-header">
+                            <h3>🔋 Battery Storage</h3>
+                            <span class="card-icon">⚡</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="value" id="batteryPercent">--% </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="batteryProgress" style="width: 0%"></div>
+                            </div>
+                            <p class="text-muted" id="batteryStatus">Idle</p>
+                        </div>
+                    </div>
+
+                    <!-- Grid Card -->
+                    <div class="energy-card grid-card">
+                        <div class="card-header">
+                            <h3>🌐 Grid Supply</h3>
+                            <span class="card-icon">📡</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="value" id="gridStatus">Connected</div>
+                            <div class="badge" id="gridBadge">🟢 Online</div>
+                            <p class="text-muted" id="gridPower">-- W available</p>
+                        </div>
+                    </div>
+
+                    <!-- Demand Card -->
+                    <div class="energy-card demand-card">
+                        <div class="card-header">
+                            <h3>📊 Current Demand</h3>
+                            <span class="card-icon">⏱️</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="value" id="demandValue">-- W</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="demandProgress" style="width: 0%"></div>
+                            </div>
+                            <p class="text-muted">Estimated: <span id="estimatedDemand">--</span> W</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Optimization Decision -->
+            <section class="dashboard-section">
+                <h2>🧠 AI Optimization Decision</h2>
+                <div class="optimization-box">
+                    <div class="opt-left">
+                        <div class="decision-display">
+                            <div id="sourceIcon" class="source-icon">⚡</div>
+                            <div class="decision-text">
+                                <h3 id="selectedSource">-- Energy Source</h3>
+                                <p id="recommendation" class="recommendation">Analyzing...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opt-right">
+                        <div class="opt-metric">
+                            <span class="metric-label">Efficiency</span>
+                            <span class="metric-value" id="efficiencyValue">--%</span>
+                        </div>
+                        <div class="opt-metric">
+                            <span class="metric-label">Cost/Hour</span>
+                            <span class="metric-value" id="costValue">$--</span>
+                        </div>
+                        <div class="opt-metric">
+                            <span class="metric-label">Savings/Hour</span>
+                            <span class="metric-value savings" id="savingsValue">$--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts Section -->
+                <div id="alertsContainer" class="alerts-container">
+                    <!-- Alerts will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="dashboard-section">
+                <h2>📈 Energy Analytics</h2>
+                <div class="charts-grid">
+                    <!-- Daily Usage Chart -->
+                    <div class="chart-container">
+                        <h3>Daily Usage Pattern</h3>
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+
+                    <!-- Source Distribution -->
+                    <div class="chart-container">
+                        <h3>Energy Source Distribution</h3>
+                        <canvas id="sourceChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Energy Predictions -->
+            <section class="dashboard-section">
+                <h2>🔮 24-Hour Predictions</h2>
+                <div class="predictions-container">
+                    <canvas id="predictionsChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Energy Saving Tips -->
+            <section class="dashboard-section">
+                <h2>💡 Energy Saving Tips</h2>
+                <div class="tips-container" id="tipsContainer">
+                    <!-- Tips will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Daily Report -->
+            <section class="dashboard-section">
+                <h2>📋 Daily Report Summary</h2>
+                <div class="report-grid">
+                    <div class="report-card">
+                        <span class="report-label">Total Energy Used</span>
+                        <span class="report-value" id="reportTotalEnergy">-- kWh</span>
+                    </div>
+                    <div class="report-card">
+                        <span class="report-label">Total Cost</span>
+                        <span class="report-value" id="reportTotalCost">$--</span>
+                    </div>
+                    <div class="report-card">
+                        <span class="report-label">Total Savings</span>
+                        <span class="report-value" id="reportTotalSavings">$--</span>
+                    </div>
+                    <div class="report-card">
+                        <span class="report-label">Records Count</span>
+                        <span class="report-value" id="reportRecords">0</span>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading-indicator">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            startAutoRefresh();
+        });
+    </script>
+</body>
+</html>
